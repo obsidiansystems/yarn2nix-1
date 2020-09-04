@@ -25,6 +25,7 @@ in stdenv.mkDerivation ((removeAttrs args [ "key" "nodeBuildInputs" ]) // {
   inherit version src;
 
   buildInputs = [ nodejs ];
+  passthru = args.passthru or {} // { inherit nodeBuildInputs; };
 
   configurePhase = args.configurePhase or "true";
   # skip the build phase except when given as attribute
