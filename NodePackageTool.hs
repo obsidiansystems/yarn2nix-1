@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards, NoImplicitPrelude, LambdaCase, FlexibleContexts, NamedFieldPuns, OverloadedStrings #-}
 import Protolude
+import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Control.Monad.Except as ExcT
 import qualified Control.Exception as Exc
@@ -111,11 +112,16 @@ realMain Args{..} = do
         -- Set the executable flag of all package binaries
         SetBinExecFlag -> setBinExecFlag . snd
 
+    removeNamespace :: Text -> Text
+    removeNamespace name = case T.head name of
+      '@' -> snd $ T.breakOnEnd "/" name
+      _ -> name
+
     -- | Read the binary files and return their names & paths.
     readBinFiles :: NP.Bin -> ErrorLogger [(Text, FilePath)]
     readBinFiles bin = case bin of
       -- files with names how they should be linked
-      (NP.BinFiles bs) -> pure $ HML.toList bs
+      (NP.BinFiles bs) -> pure $ fmap (\(a,b)->(removeNamespace a, b)) $ HML.toList bs
       -- a whole folder where everything should be linked
       (NP.BinFolder bf) -> do
         dirM <- liftIO $ tryAccess (Dir.listDirectory bf)
