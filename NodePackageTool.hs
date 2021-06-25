@@ -155,12 +155,24 @@ realMain Args{..} = do
     -- | Link a binary file to @targetDir/name@.
     -- @relBinPath@ is relative from the package dir.
     linkBin :: FilePath -> (Text, FilePath) -> ErrorLogger ()
-    linkBin targetDir_ (name, relBinPath) = do
+    linkBin targetDir_ (name_, relBinPath) = do
       binPath <- canonPkg relBinPath
-      targetDir <- canon targetDir_
-      tryIOMsg
-        (\e -> "Symlink could not be created: " <> e)
-        (PosixFiles.createSymbolicLink binPath $ targetDir FP.</> toS name)
+      (name, targetDir) <- traverse canon $
+        symlinkTarget name_ targetDir_
+      tryIOMsg (\e -> "Directory could not be created: " <> e) $
+        Dir.createDirectoryIfMissing False targetDir
+      tryIOMsg (\e -> "Symlink could not be created: " <> e) $
+        PosixFiles.createSymbolicLink binPath $ targetDir FP.</> toS name
+
+    -- | Given a name and a target directory, return
+    --   the basename and the target (sub) directory
+    --   of the target file
+    symlinkTarget :: Text -> FilePath -> (FilePath, FilePath)
+    symlinkTarget name targetDir =
+      if "/" `T.isInfixOf` name
+        then (FP.takeFileName name', targetDir FP.</> FP.takeDirectory name')
+        else (name', targetDir)
+      where name' = T.unpack name
 
     -- | Set executable flag of the file.
     setBinExecFlag :: FilePath -> ErrorLogger ()
