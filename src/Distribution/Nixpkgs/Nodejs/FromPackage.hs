@@ -12,8 +12,9 @@ import qualified Data.HashMap.Lazy as HML
 import Nix.Expr
 import Nix.Expr.Additions
 
-import Distribution.Nixpkgs.Nodejs.Utils (packageKeyToSymbol)
+import Distribution.Nixpkgs.Nodejs.Utils (packageKeyToSymbol, attrSetMayStr, attrSetMay)
 import qualified Distribution.Nodejs.Package as NP
+import qualified Distribution.Nixpkgs.Nodejs.License as NL
 import qualified Yarn.Lock.Types as YLT
 
 
@@ -33,8 +34,8 @@ parsePackageKeyName k =
 -- | generate a nix expression that translates your package.nix
 --
 -- and can serve as template for manual adjustments
-genTemplate :: NP.Package -> NExpr
-genTemplate NP.Package{..} =
+genTemplate :: Maybe NL.LicensesBySpdxId -> NP.Package -> NExpr
+genTemplate licSet NP.Package{..} =
   -- reserved for possible future arguments (to prevent breakage)
   simpleParamSet []
   ==> Param nodeDepsSym
@@ -44,9 +45,9 @@ genTemplate NP.Package{..} =
         , "nodeBuildInputs"  $= (letE "a" (mkSym nodeDepsSym)
                                   $ mkList (map (pkgDep "a") depPkgKeys))
         , "meta"      $= (mkNonRecSet
-           $ may "description" description
-          <> may "license" license
-          <> may "homepage" homepage)
+           $ attrSetMayStr "description" description
+          <> attrSetMay    "license" (NL.nodeLicenseToNixpkgs license licSet)
+          <> attrSetMayStr "homepage" homepage)
         ])
   where
     -- TODO: The devDependencies are only needed for the build
@@ -63,4 +64,3 @@ genTemplate NP.Package{..} =
       [ bindTo "name"  $ mkStrQ [ StrQ n ]
       , bindTo "scope" $ mkStrQ [ StrQ s ]
       ]
-    may k v = [k $= mkStr (fromMaybe mempty v)]

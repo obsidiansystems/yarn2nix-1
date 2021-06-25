@@ -3,9 +3,11 @@
 let
   lib = pkgs.lib;
 
+  licensesJson = pkgs.writeText "licenses.json"
+    (builtins.toJSON (lib.filterAttrs (n: v: v ? spdxId) lib.licenses));
+
   haskellPackages = pkgs.haskellPackages.override {
-    overrides = lib.composeExtensions
-      (pkgs.callPackage ./nix-lib/old-version-dependencies.nix {})
+    overrides =
       (self: super: {
         yarn2nix =
           let
@@ -19,6 +21,8 @@ let
                     src/Distribution/Nixpkgs/Nodejs/ResolveLockfile.hs \
                     --replace '"nix-prefetch-git"' \
                       '"${pkgs.nix-prefetch-git.override { git = pkgs.gitMinimal; }}/bin/nix-prefetch-git"'
+                  sed -i '/license-data/a \ <> O.value "${licensesJson}" <> O.showDefault' \
+                    src/Distribution/Nixpkgs/Nodejs/Cli.hs
                 '';
               });
           in pkgs.haskell.lib.overrideCabal pkg (old: {
@@ -56,6 +60,7 @@ let
             "src/*"
             "Main.hs"
             "package.yaml"
+            "yarn2nix.cabal"
             ".envrc"
             "shell.nix"
             "Repl.hs"
