@@ -1,5 +1,5 @@
 name: yarn2nix
-version: 0.9.0
+version: 0.10.1
 github: Profpatsch/yarn2nix
 license: MIT
 license-file: LICENSE
@@ -18,7 +18,8 @@ ghc-options:
   - -Wall
 
 dependencies:
-  - aeson >= 1.0 && < 1.6
+  - aeson >= 2.0
+  - aeson-better-errors >= 0.9.1.1
   - async-pool == 0.9.*
   - base == 4.*
   - bytestring == 0.10.*
@@ -26,13 +27,14 @@ dependencies:
   - data-fix >= 0.0.7 && < 0.4
   - directory == 1.3.*
   - filepath == 1.4.*
-  - hnix >= 0.6 && < 0.14
+  - hnix >= 0.6 && < 0.15
   - mtl == 2.2.*
   - prettyprinter >= 1.2 && < 1.8
   - process >= 1.4
   - protolude ^>= 0.3
   - regex-tdfa ^>= 1.3
   - stm > 2.4.0 && < 2.6.0.0
+  - scientific > 0.3.3.0 && < 0.4
   - text == 1.2.*
   - transformers == 0.5.*
   - unordered-containers == 0.2.*

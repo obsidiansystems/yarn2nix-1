@@ -1,3 +1,9 @@
+
+ATTENTION: You are not looking at the `yarn2nix` as packaged in `nixpkgs`. This is an alternative implementation, with different tradeoffs.
+For an overview of the history of these tools and current options, see [this nixpkgs issue](https://github.com/NixOS/nixpkgs/issues/20637).
+
+I currently don’t have much time to maintain this project, it should work for some cases, but has not been “battle-tested” very much.
+
 # yarn2nix
 
 ```
@@ -114,6 +120,6 @@ for instructions.
 
 ```
 $ nix-shell
-nix-shell> hpack
+nix-shell> ninja
 nix-shell> cabal build yarn2nix
 ```
