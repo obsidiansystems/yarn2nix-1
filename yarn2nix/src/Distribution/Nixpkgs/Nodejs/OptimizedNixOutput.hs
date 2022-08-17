@@ -171,9 +171,9 @@ convertLockfile = M.fromList . foldMap convert . MKM.toList
           PkgDefFileLocal $ pkgDataGeneric $ fileLocalPath
         YLT.GitRemote{gitRepoUrl, gitRev} ->
           PkgDefGit $ pkgDataGeneric $ Git gitRepoUrl gitRev
-        YLT.FileRemoteNoIntegrity{..} ->
+        YLT.FileRemoteNoIntegrity {} ->
           panic "programming error, should have thrown an error in ResolveLockfile"
-        YLT.FileLocalNoIntegrity{..} ->
+        YLT.FileLocalNoIntegrity {} ->
           panic "programming error, should have thrown an error in ResolveLockfile"
                  -- we don’t need another ref indirection
                  -- if that’s already the name of our def
@@ -262,7 +262,9 @@ mkPackageSet packages =
     mkShortcut (nSyms, short) = unNSym short $= concatNSyms nSyms
     -- | Try to shorten sym, otherwise use input.
     shorten :: [NSym] -> NExpr
-    shorten s = maybe (concatNSyms s) (N.mkSym . unNSym) $ M.lookup s shortcuts
+    shorten s = case M.lookup s shortcuts of
+      Nothing -> concatNSyms s
+      Just sc -> N.mkSym (unNSym sc)
     -- | Build function boilerplate the build functions share in common.
     buildPkgFnGeneric :: [Text] -> NExpr -> NExpr
     buildPkgFnGeneric additionalArguments srcNExpr =
